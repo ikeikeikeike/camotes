@@ -1,0 +1,27 @@
+{
+  "name": "camotes",
+  "version": "1.0.0",
+  "description": "The application which kowloon use as middle layer , which is the next generation of MONOPOS!!",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "animate.css": "^3.5.2",
+    "bootstrap": "^3.3.7",
+    "font-awesome": "^4.7.0",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.9.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-cssnext": "^1.0.1",
+    "gulp-postcss": "^7.0.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-watch": "^4.3.11",
+    "postcss-cssnext": "^3.0.2",
+    "typeahead.js": "^0.11.1",
+    "weather-icons": "^1.3.2"
+  },
+  "dependencies": {
+    "strip-css-comments": "^3.0.0"
+  }
+}

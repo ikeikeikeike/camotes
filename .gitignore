@@ -1,14 +1,18 @@
 /.idea
 
-/app/views
-
 /target
 /node_modules
 /project/project
 /project/target
-/
+
 /ui/node_modules
 /public/scripts/*
 /public/stylesheets/*
 /public/fonts/*
 /logs/*
+
+/app/views
+
+.DS_Store
+/.hg
+/.hgignore

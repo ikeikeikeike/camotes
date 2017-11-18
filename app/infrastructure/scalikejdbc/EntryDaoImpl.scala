@@ -22,8 +22,9 @@ class EntryDaoImpl @Inject() extends EntryDao {
     src = rs.string("src"), // Original URL
     dest = rs.string("dest"), // Download URL
 
+    duration = rs.intOpt("duration"),
+
     img = rs.string("img"), // Image url
-    alt = rs.stringOpt("alt"), // Alternative image url
 
     site = rs.string("site"), // TODO: will be one to many
     tags = rs.string("tags"), // TODO: will be many to many
@@ -34,8 +35,8 @@ class EntryDaoImpl @Inject() extends EntryDao {
   def create(src: String, title: String)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow] = {
     val dt = DateTime.now(DateTimeZone.UTC)
     async {
-      sql"""insert into entries(title, src, dest, img, site, tags, created_at, updated_at)
-      values('', ${src}, '', '', '', '', ${dt}, ${dt})""".updateAndReturnGeneratedKey.apply()
+      sql"""insert into entries(title, src, dest, duration, img, site, tags, created_at, updated_at)
+      values('', ${src}, '', null, '', '', '', ${dt}, ${dt})""".updateAndReturnGeneratedKey.apply()
     }.map(id => EntryRow(id, title, src = src, dest = "", img = "", site = "", tags = "", createdAt = dt, updatedAt = dt))
   }
 

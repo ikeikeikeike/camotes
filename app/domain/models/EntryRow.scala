@@ -7,10 +7,9 @@ case class EntryRow(
   content: Option[String] = None,
   src: String = "",
   dest: String = "",
+  duration: Option[Int] = None,
   img: String = "",
-  alt: Option[String] = None,
   site: String = "",
   tags: String = "",
   createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
-  updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)
-)
+  updatedAt: DateTime = DateTime.now(DateTimeZone.UTC))

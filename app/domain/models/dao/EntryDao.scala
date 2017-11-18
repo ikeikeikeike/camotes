@@ -1,11 +1,11 @@
 package domain.models.dao
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scalikejdbc._
 import com.google.inject.ImplementedBy
-
 import domain.models.EntryRow
-import infrastructure.scalikejdbc.{ EntryDaoImpl }
+import infrastructure.scalikejdbc.EntryDaoImpl
+import scalikejdbc._
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 @ImplementedBy(classOf[EntryDaoImpl])
 trait EntryDao {

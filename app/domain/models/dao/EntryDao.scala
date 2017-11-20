@@ -9,6 +9,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 @ImplementedBy(classOf[EntryDaoImpl])
 trait EntryDao {
-  def create(src: String, title: String)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow]
   def find(id: Long)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[Option[EntryRow]]
+  def create(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow]
 }

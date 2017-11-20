@@ -1,6 +1,7 @@
 package domain.scraper
 
 import com.google.inject.ImplementedBy
+import com.netaporter.uri.Uri
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -50,7 +51,7 @@ case class Root(
   format: Option[String],
   formatId: Option[String],
   extractor: Option[String],
-  extractorKey: Option[String],
+  extractorkey: Option[String],
   description: Option[String],
   thumbnail: Option[String],
   duration: Option[Int],
@@ -65,7 +66,22 @@ case class Root(
 ) {
 
   def gatheredTags:Seq[String] = (tags ++ categories).distinct
+
   def sitename:String = {
-    ""
+    extractor match {
+      case Some("generic") =>
+        val uri = Uri.parse(webpageUrl.get)
+        val (host, suffix) = (uri.host, uri.publicSuffix)
+
+        suffix.flatMap(f => host.map(_.replace(s".${f}", "")))
+          .map(f => f.split('.').last)
+          .getOrElse("")
+
+      case Some(text) =>
+        text.toLowerCase
+
+      case _ =>
+        ""
+    }
   }
 }

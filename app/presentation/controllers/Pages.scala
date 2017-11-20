@@ -3,7 +3,6 @@ package presentation.controllers
 import javax.inject.{ Inject, Singleton }
 
 import dispatch.{ Http, as, url }
-import domain.models.dao.EntryDao
 import domain.scraper.Scraper
 import io.kanaka.monadic.dsl._
 import play.api.data.Forms._
@@ -15,10 +14,9 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class Pages @Inject() (
-  dao: EntryDao,
   scraper: Scraper,
-  cc: ControllerComponents)(implicit ec: ExecutionContext) extends BaseController(cc)
-  with helpers.Pages {
+  helper: helpers.Pages,
+  cc: ControllerComponents)(implicit ec: ExecutionContext) extends BaseController(cc) {
 
   case class SrcForm(src: String)
   val SrcDataForm = Form(mapping("src" -> text)(SrcForm.apply)(SrcForm.unapply))
@@ -46,9 +44,10 @@ class Pages @Inject() (
   def request = Action.async { implicit rs =>
     for {
       fm <- SrcDataForm.bindFromRequest() ?| warn("Failed!")
-      fscrape <- scraper.scrape(fm.src) ?| warn("Failed!")
-      entry <- dao.create(fm.src, "") ?| warn("Failed!")
+      scrape <- scraper.scrape(fm.src) ?| warn("Failed!")
+      entries <- helper.saveEntireEntry(scrape) ?| warn("Failed!")
     } yield {
+      entries.map(println)
       Redirect(routes.Pages.requestForm).flashing("ok" -> "Downloaded!")
     }
   }

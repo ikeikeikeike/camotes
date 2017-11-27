@@ -2,14 +2,13 @@ package infrastructure.scalikejdbc
 
 import javax.inject.{ Inject, Singleton }
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.async.Async.async
+import domain.models.EntryRow
+import domain.models.dao.EntryDao
+import org.joda.time.{ DateTime, DateTimeZone }
 import scalikejdbc._
 
-import org.joda.time.{ DateTime, DateTimeZone }
-
-import domain.models.dao.EntryDao
-import domain.models.EntryRow
+import scala.async.Async.async
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class EntryDaoImpl @Inject() extends EntryDao {
@@ -26,6 +25,24 @@ class EntryDaoImpl @Inject() extends EntryDao {
     createdAt = rs.jodaDateTime("created_at"),
     updatedAt = rs.jodaDateTime("updated_at"))
 
+  def find(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[Option[EntryRow]] = {
+    val sql =
+      if (row.id > 0)
+        sql"""select * from entries where id = ${row.id}"""
+      else
+        sql"""select * from entries where src = ${row.src}"""
+
+    async(sql.map(*).single.apply())
+  }
+
+  def findById(id: Long)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[Option[EntryRow]] = {
+    async(sql"""select * from entries where id = ${id}""".map(*).single.apply())
+  }
+
+  def all(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[Seq[EntryRow]] = {
+    async(sql"""select * from entries""".map(*).list.apply())
+  }
+
   def create(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow] = {
     val dt = DateTime.now(DateTimeZone.UTC)
     async {
@@ -35,9 +52,10 @@ class EntryDaoImpl @Inject() extends EntryDao {
     }.map(id => row.copy(id = id, createdAt = dt, updatedAt = dt))
   }
 
-  def find(id: Long)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[Option[EntryRow]] = {
-    async {
-      sql"""select * from entries where id = ${id}""".map(*).single.apply()
+  def save(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow] = {
+    find(row).flatMap {
+      case Some(row) => Future.successful(row)
+      case None => create(row)
     }
   }
 }

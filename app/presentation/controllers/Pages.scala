@@ -1,5 +1,6 @@
 package presentation.controllers
 
+import java.io.{ BufferedInputStream, BufferedOutputStream, InputStream, OutputStream }
 import javax.inject.{ Inject, Singleton }
 
 import akka.stream.scaladsl.StreamConverters
@@ -17,8 +18,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 @Singleton
 class Pages @Inject() (
   scraper: dscraper.Scraper,
-  helper: helpers.Pages,
-  cc: ControllerComponents)(implicit ec: ExecutionContext) extends BaseController(cc) {
+  helper:  helpers.Pages,
+  cc:      ControllerComponents
+)(implicit ec: ExecutionContext) extends BaseController(cc) {
 
   case class SrcForm(src: String)
   val SrcDataForm = Form(mapping("src" -> text)(SrcForm.apply)(SrcForm.unapply))
@@ -54,9 +56,18 @@ class Pages @Inject() (
     //    val url = "http://ipv4.download.thinkbroadband.com/512MB.zip"
 
     val source =
-      StreamConverters.asOutputStream().mapMaterializedValue { out =>
-        for (file <- http(dispatch.url(url) OK dispatch.as.Bytes)) yield {
-          try file.foreach(out.write(_)) finally out.close()
+      StreamConverters.asOutputStream().mapMaterializedValue { output =>
+        for (input <- http(dispatch.url(url) OK dispatch.as.Response(_.getResponseBodyAsStream))) yield {
+          val in = new java.io.BufferedInputStream(input)
+          val out = new java.io.BufferedOutputStream(output)
+
+          // TODO: using
+          try {
+            Iterator.continually(in.read).takeWhile(-1 !=).foreach(out.write)
+          } finally {
+            in.close()
+            out.close()
+          }
         }
       }
 
@@ -64,7 +75,9 @@ class Pages @Inject() (
       body = HttpEntity.Streamed(source, None, Some("video/mp4")),
       header = ResponseHeader(200, Map(
         CACHE_CONTROL -> "max-age=0", // to be max-age=86400
-        CONTENT_DISPOSITION -> "attachment; filename=download1.mp4")))
+        CONTENT_DISPOSITION -> "attachment; filename=download1.mp4"
+      ))
+    )
   }
 
   def downloadAsync = Action.async { implicit rs =>
@@ -86,7 +99,9 @@ class Pages @Inject() (
         body = HttpEntity.Streamed(source, Some(bfile.length.toLong), Some("video/mp4")),
         header = ResponseHeader(200, Map(
           CACHE_CONTROL -> "max-age=0", // to be max-age=86400
-          CONTENT_DISPOSITION -> "attachment; filename=download2.mp4")))
+          CONTENT_DISPOSITION -> "attachment; filename=download2.mp4"
+        ))
+      )
     }
   }
 

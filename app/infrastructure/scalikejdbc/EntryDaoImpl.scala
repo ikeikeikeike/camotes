@@ -23,7 +23,8 @@ class EntryDaoImpl @Inject() extends EntryDao {
     site = rs.string("site"), // TODO: will be one to many
     tags = rs.string("tags"), // TODO: will be many to many
     createdAt = rs.jodaDateTime("created_at"),
-    updatedAt = rs.jodaDateTime("updated_at"))
+    updatedAt = rs.jodaDateTime("updated_at")
+  )
 
   def find(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[Option[EntryRow]] = {
     val sql =
@@ -55,7 +56,7 @@ class EntryDaoImpl @Inject() extends EntryDao {
   def save(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow] = {
     find(row).flatMap {
       case Some(row) => Future.successful(row)
-      case None => create(row)
+      case None      => create(row)
     }
   }
 }

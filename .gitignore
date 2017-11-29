@@ -11,6 +11,8 @@
 /public/fonts/*
 /logs/*
 
+/package-lock.json
+
 /app/views
 
 .DS_Store

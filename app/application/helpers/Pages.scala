@@ -1,4 +1,4 @@
-package presentation.helpers
+package application.helpers
 
 import javax.inject.{ Inject, Singleton }
 
@@ -13,10 +13,10 @@ class Pages @Inject() (dao: EntryDao) {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def saveEntireEntry(scrape: Scrape): Future[Seq[EntryRow]] =
-    Future.sequence(scrape.entries.map(saveEntry))
+    Future.sequence(scrape.entries.map(entry => saveEntry(entry)))
 
   def saveEntireEntry(entries: Seq[Entry]): Future[Seq[EntryRow]] =
-    Future.sequence(entries.map(saveEntry))
+    Future.sequence(entries.map(entry => saveEntry(entry)))
 
   def saveEntireEntry(entry: Entry): Future[Seq[EntryRow]] =
     Future.sequence(Seq(saveEntry(entry)))
@@ -29,6 +29,7 @@ class Pages @Inject() (dao: EntryDao) {
       img = entry.img,
       site = entry.site,
       tags = entry.tags,
-      duration = entry.duration))
+      duration = entry.duration
+    ))
   }
 }

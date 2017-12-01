@@ -12,6 +12,7 @@ resolvers += "Atilika" at "http://www.atilika.org/nexus/content/repositories/ati
 
 libraryDependencies ++= Seq(
   "ch.qos.logback"               %  "logback-classic"                  % "1.2.3",
+  "com.typesafe.play"            %% "play-json-joda"                   % "2.6.0",
   "com.github.cb372"             %% "scalacache-core"                  % "0.9.4",
   "com.github.cb372"             %% "scalacache-guava"                 % "0.9.4",
   "com.google.inject.extensions" % "guice-multibindings"               % "4.1.0",
@@ -50,4 +51,5 @@ javaOptions in Test += "-Dconfig.file=conf/test.conf"
 
 PlayKeys.devSettings := Seq("play.server.http.port" -> "9009")
 
-TwirlKeys.templateImports += "presentation.controllers.routes._"
+TwirlKeys.templateImports += "application.views._"
+TwirlKeys.templateImports += "application.controllers.routes._"

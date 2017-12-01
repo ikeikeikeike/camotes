@@ -42,6 +42,7 @@ class ScraperImpl @Inject() (config: Configuration) extends Scraper {
       duration = root.duration,
       img = root.thumbnail.getOrElse(""),
       site = root.sitename,
-      tags = root.gatheredTags.mkString(","))
+      tags = root.gatheredTags.mkString(",")
+    )
   }
 }

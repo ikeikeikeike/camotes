@@ -16,9 +16,9 @@ object Closer {
 case class Closing[-A](close: A => Unit)
 
 object Closing {
-  implicit val sourceCloser: Closing[Source] = Closing(_.close())
-  implicit val writerCloser: Closing[Writer] = Closing(_.close())
-  implicit val outputStreamCloser: Closing[OutputStream] = Closing(_.close())
-  implicit val inputStreamCloser: Closing[InputStream] = Closing(_.close())
+  implicit val sourceCloser: Closing[Source] = Closing(_.close)
+  implicit val writerCloser: Closing[Writer] = Closing(_.close)
+  implicit val outputStreamCloser: Closing[OutputStream] = Closing(_.close)
+  implicit val inputStreamCloser: Closing[InputStream] = Closing(_.close)
 }
 

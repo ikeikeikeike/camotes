@@ -22,8 +22,6 @@ libraryDependencies ++= Seq(
   "io.lemonlabs"                 %% "scala-uri"                        % "0.5.0",
   "joda-time"                    % "joda-time"                         % "2.9.6",
   "mysql"                        % "mysql-connector-java"              % "6.0.6",
-  "net.databinder.dispatch"      %% "dispatch-core"                    % "0.13.2",
-  "net.databinder.dispatch"      %% "dispatch-json4s-native"           % "0.13.2",
   "net.debasishg"                %% "redisclient"                      % "3.4",
   "org.apache.commons"           % "commons-lang3"                     % "3.1",
   "org.scala-lang.modules"       %% "scala-async"                      % "0.9.6",

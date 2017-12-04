@@ -2,12 +2,84 @@ package domain.scraper
 
 import com.google.inject.ImplementedBy
 import com.netaporter.uri.Uri
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
+import play.api.libs.ws.WSResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 @ImplementedBy(classOf[infrastructure.scraper.ScraperImpl])
 trait Scraper {
-  def scrape(src: String)(implicit ec: ExecutionContext): Future[Either[Error, Scrape]]
+  def info(src: String)(implicit ec: ExecutionContext): Future[Either[Error, Scrape]]
+  def stream(src: String)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]]
+}
+
+object JsonFormatter {
+  implicit def option[T: Format]: Format[Option[T]] = new Format[Option[T]] {
+    override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
+    override def writes(o: Option[T]): JsValue = o match {
+      case Some(t) => implicitly[Writes[T]].writes(t)
+      case None    => JsNull
+    }
+  }
+
+  implicit val datetimeWrites = JodaWrites.jodaDateWrites("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+
+  implicit val videoFormat: Format[VideoFormat] = (
+    (__ \ "manifest_url").formatNullable[String] and
+    (__ \ "ext").formatNullable[String] and
+    (__ \ "url").formatNullable[String] and
+    (__ \ "protocol").formatNullable[String] and
+    (__ \ "format").formatNullable[String] and
+    (__ \ "format_id").formatNullable[String] and
+    (__ \ "tbr").formatNullable[Float] and
+    (__ \ "resolution").formatNullable[String] // TODO: resolution
+  )(VideoFormat.apply, unlift(VideoFormat.unapply))
+
+  implicit val thumbnail: Format[Thumbnail] = (
+    (__ \ "id").format[String] and
+    (__ \ "url").format[String]
+  )(Thumbnail.apply, unlift(Thumbnail.unapply))
+
+  implicit val entry: Format[Entry] = (
+    (__ \ "title").format[String] and
+    (__ \ "content").formatNullable[String] and
+    (__ \ "src").format[String] and
+    (__ \ "duration").formatNullable[Int] and
+    (__ \ "like_count").formatNullable[Int] and
+    (__ \ "view_count").formatNullable[Int] and
+    (__ \ "img").format[String] and
+    (__ \ "site").format[String] and
+    (__ \ "tags").format[String] and
+    (__ \ "formats").format[Seq[VideoFormat]]
+  )(Entry.apply, unlift(Entry.unapply))
+
+  implicit val root: Format[Root] = (
+    (__ \ "id").formatNullable[String] and
+    (__ \ "title").formatNullable[String] and
+    (__ \ "webpage_url").formatNullable[String] and
+    (__ \ "description").formatNullable[String] and
+    (__ \ "manifest_url").formatNullable[String] and
+    (__ \ "ext").formatNullable[String] and
+    (__ \ "url").formatNullable[String] and
+    (__ \ "protocol").formatNullable[String] and
+    (__ \ "format").formatNullable[String] and
+    (__ \ "formatId").formatNullable[String] and
+    (__ \ "tbr").formatNullable[Float] and
+    (__ \ "extractor").formatNullable[String] and
+    (__ \ "thumbnail").formatNullable[String] and
+    (__ \ "duration").formatNullable[Int] and
+    (__ \ "like_count").formatNullable[Int] and
+    (__ \ "view_count").formatNullable[Int] and
+    (__ \ "tags").format[Seq[String]] and
+    (__ \ "categories").format[Seq[String]] and
+    (__ \ "thumbnails").format[Seq[Thumbnail]] and
+    (__ \ "formats").format[Seq[VideoFormat]] and
+    (__ \ "requested_formats").format[Seq[VideoFormat]] and
+    (__ \ "entries").formatNullable[Seq[Root]]
+  )(Root.apply, unlift(Root.unapply))
+
 }
 
 object Formatter {
@@ -20,7 +92,7 @@ object Formatter {
 case class Scrape(entries: Seq[Entry])
 case class Entry(
   title:     String,
-  content:   Option[String] = None,
+  content:   Option[String]   = None,
   src:       String,
   duration:  Option[Int],
   likeCount: Option[Int],
@@ -28,7 +100,7 @@ case class Entry(
   img:       String,
   site:      String,
   tags:      String,
-  formats:   Seq[Format]
+  formats:   Seq[VideoFormat]
 )
 
 case class Thumbnail(id: String, url: String)
@@ -37,9 +109,8 @@ case class Thumbnail(id: String, url: String)
 //  acceptCharset: String,
 //  acceptEncoding: String,
 //  acceptLanguage: String,
-//  userAgent: String)
 
-case class Format(
+case class VideoFormat(
   manifestUrl: Option[String],
   ext:         Option[String],
   url:         Option[String],
@@ -48,20 +119,8 @@ case class Format(
   formatId:    Option[String],
   tbr:         Option[Float],
   resolution:  Option[String]
+)
 //  httpHeaders: Option[HttpHeaders]
-) {
-  def this(
-    manifestUrl: Option[String],
-    ext:         Option[String],
-    url:         Option[String],
-    protocol:    Option[String],
-    format:      Option[String],
-    formatId:    Option[String],
-    tbr:         Option[Float]
-  ) = {
-    this(manifestUrl, ext, url, protocol, format, formatId, tbr, Formatter.resolution(format))
-  }
-}
 
 case class Root(
   // httpHeaders:  Option[HttpHeaders],
@@ -85,18 +144,31 @@ case class Root(
   tags:             Seq[String],
   categories:       Seq[String],
   thumbnails:       Seq[Thumbnail],
-  formats:          Seq[Format],
-  requestedFormats: Seq[Format],
-  entries:          Seq[Root]
+  formats:          Seq[VideoFormat],
+  requestedFormats: Seq[VideoFormat],
+  entries:          Option[Seq[Root]]
 ) {
 
   def gatheredTags: Seq[String] = (tags ++ categories).distinct
 
-  def gatheredFormats: Seq[Format] = {
+  def gatheredFormats: Seq[VideoFormat] = {
     val list = formats ++ requestedFormats
 
-    if (list.nonEmpty) list else
-      Seq(Format(manifestUrl, ext, url, protocol, format, formatId, tbr, Formatter.resolution(format)))
+    if (list.nonEmpty) list else {
+      val videoFormat =
+        VideoFormat(
+          manifestUrl = manifestUrl,
+          ext = ext,
+          url = url,
+          protocol = protocol,
+          format = format,
+          formatId = formatId,
+          tbr = tbr,
+          resolution = Formatter.resolution(format)
+        )
+
+      Seq(videoFormat)
+    }
   }
 
   def sitename: String = {

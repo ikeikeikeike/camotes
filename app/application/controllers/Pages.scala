@@ -50,9 +50,9 @@ class Pages @Inject() (
   }
 
   def downloadSync = Action { implicit rs =>
-    val url = "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.tar.gz"
+    //    val url = "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.tar.gz"
     //    val url = "http://ipv4.download.thinkbroadband.com/5MB.zip"
-    //    val url = "http://ipv4.download.thinkbroadband.com/512MB.zip"
+    val url = "http://ipv4.download.thinkbroadband.com/512MB.zip"
 
     val source =
       StreamConverters.asOutputStream().mapMaterializedValue { output =>
@@ -62,14 +62,48 @@ class Pages @Inject() (
         }
       }
 
-    Result(
-      body = HttpEntity.Streamed(source, None, Some("video/mp4")),
-      header = ResponseHeader(OK, Map(
-        CACHE_CONTROL -> "max-age=0", // to be max-age=8640000
-        CONTENT_DISPOSITION -> "attachment; filename=download1.mp4"
-      ))
-    )
+    Ok.chunked(source).as("application/octet-stream")
+
+    //    Result(
+    //      body = HttpEntity.Streamed(source, None, Some("video/mp4")),
+    //      header = ResponseHeader(OK, Map(
+    //        CACHE_CONTROL -> "max-age=0", // to be max-age=8640000
+    //        CONTENT_DISPOSITION -> "attachment; filename=download1.mp4"
+    //      ))
+    //    )
   }
+
+  //  def downloadFile = Action { implicit rs =>
+  //    val url = "http://ipv4.download.thinkbroadband.com/512MB.zip"
+  //
+  //    // Make the request
+  //    val unko: CompletionStage[WSResponse] = ws.url(url).setMethod("GET").stream()
+  //
+  //    unko.handle{(resp, _) =>
+  //      // Check that the resp was successful
+  //
+  //      if (resp.getStatus == 200) {
+  //
+  //        // Get the content type
+  //        val contentType = resp.headers.get("Content-Type").flatMap(_.headOption)
+  //          .getOrElse("application/octet-stream")
+  //
+  //        // If there's a content length, send that, otherwise return the body chunked
+  //        resp.getHeaders().get("Content-Length") match {
+  //          case Some(Seq(length)) =>
+  //            Ok.sendEntity(HttpEntity.Streamed(resp.bodyAsSource, Some(length.toLong), Some(contentType)))
+  //          case _ =>
+  //            Ok.chunked(resp.bodyAsSource).as(contentType)
+  //        }
+  //
+  //        Ok.chunked(resp.getBodyAsStream).as("application/octet-stream")
+  //      } else {
+  //        BadGateway
+  //      }
+  //    }
+  //
+  //    Ok(views.html.pages.requestForm())
+  //  }
 
   def downloadAsync = Action.async { implicit rs =>
     val url = "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.tar.gz"

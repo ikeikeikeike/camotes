@@ -6,36 +6,20 @@ $(() => {  if ( !!!$('#req').length ) return;
   const srcValue  = () => $form.find('[name="src"]').val();
   const encodeURI = encodeURIComponent;
 
-  const resolution = (format) => {
-    if (! format) return '';
-    return format.split('-').pop().trim().split(' ')[0];
-  }
+  $submit.on('click', _ => render($form, _ => $result.find('.res-donwload').on('click', ev => {
+    const d = {}; $form.serializeArray().map(x => d[x.name] = x.value);
+    const data = Object.assign($(ev.currentTarget).data(), d)
 
-  const myround = (number, d) => {
-    if (! number) return '';
-    d = d || 2;
-    return Math.floor(number * Math.pow(10, d)) / Math.pow(10, d);
-  }
+    downloadFile($form.data('action-stream'), data)
+  })));
 
-  const elseUnknown = (value) => {
-    if (! value) {
-      return ''
-    } else if (value == 'unknown') {
-      return ''
+  $form.on("keypress", ev => {
+    switch (ev.keyCode ? ev.keyCode : ev.which) {
+    case 13:
+      ev.preventDefault(); ev.stopPropagation();
+      $submit.trigger('click');
     }
-
-    return value;
-  }
-
-  const downloadFile = (uri, data, filename) => {
-    const link = document.createElement("a");
-    link.download = filename || `${srcValue().split('/').pop()}.mp4`;
-    link.href = uri + '?' + encodeQueryData(data);
-    link.click();
-  }
-
-  const encodeQueryData = data =>
-    Object.keys(data).map(k => encodeURI(k) + '=' + encodeURI(data[k])).join('&')
+  });
 
   const render = ($form, cb) => {
     if (! validateURL(srcValue())) return alert('Invalid URL');
@@ -103,30 +87,36 @@ $(() => {  if ( !!!$('#req').length ) return;
     })
   };
 
-  $submit.on('click', _ => render($form, _ => $result.find('.res-donwload').on('click', ev => {
-    const d = {}; $form.serializeArray().map(x => d[x.name] = x.value);
-    const data = Object.assign($(ev.currentTarget).data(), d)
+  const resolution = (format) => {
+    if (! format) return '';
+    return format.split('-').pop().trim().split(' ')[0];
+  }
 
-    downloadFile($form.data('action-stream'), data)
-  })));
+  const myround = (number, d) => {
+    if (! number) return '';
+    d = d || 2;
+    return Math.floor(number * Math.pow(10, d)) / Math.pow(10, d);
+  }
 
-  $form.on("keypress", ev => {
-    switch (ev.keyCode ? ev.keyCode : ev.which) {
-    case 13:
-      ev.preventDefault(); ev.stopPropagation();
-      $submit.trigger('click');
+  const elseUnknown = (value) => {
+    if (! value) {
+      return ''
+    } else if (value == 'unknown') {
+      return ''
     }
-  });
 
+    return value;
+  }
 
+  const downloadFile = (uri, data, filename) => {
+    const link = document.createElement("a");
+    link.download = filename || `${srcValue().split('/').pop()}.mp4`;
+    link.href = uri + '?' + encodeQueryData(data);
+    link.click();
+  }
 
-
-
-
-
-
-
-
+  const encodeQueryData = data =>
+    Object.keys(data).map(k => encodeURI(k) + '=' + encodeURI(data[k])).join('&')
 
   const validateURL = (value) =>
     /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(value);

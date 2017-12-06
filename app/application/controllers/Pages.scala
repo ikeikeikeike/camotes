@@ -36,26 +36,27 @@ class Pages @Inject() (
       fm <- SrcDataForm.bindFromRequest() ?| BadRequest(views.html.pages.requestForm())
       info <- scraper.info(fm.src) ?| BadRequest(views.html.pages.requestForm())
 
-    } yield Ok(Json.toJson(info.entries).toString()).as(JSON).withHeaders(CACHE_CONTROL -> "max-age=8640000")
+    } yield Ok(Json.toJson(info.entries).toString()).as(JSON)
+      .withHeaders(CACHE_CONTROL -> "max-age=0")
+    //      .withHeaders(CACHE_CONTROL -> "max-age=8640000")
   }
 
   def download = Action.async { implicit rs =>
-    //    val src = "http://ipv4.download.thinkbroadband.com/512MB.zip"
-
     for {
       fm <- SrcDataForm.bindFromRequest() ?| BadRequest(views.html.pages.requestForm())
       r <- scraper.stream(fm.src) ?| BadRequest(views.html.pages.requestForm())
-    } yield {
-      if (r.status < 400) BadGateway else {
-        val contentType = r.headers.get("Content-Type").flatMap(_.headOption)
-          .getOrElse("application/octet-stream")
 
-        r.headers.get("Content-Length") match {
-          case Some(Seq(length)) =>
-            Ok.sendEntity(HttpEntity.Streamed(r.bodyAsSource, Some(length.toLong), Some(contentType)))
-          case _ =>
-            Ok.chunked(r.bodyAsSource).as(contentType)
-        }
+    } yield if (r.status >= 400) BadGateway else {
+      val contentType = r.headers.get("Content-Type").flatMap(_.headOption)
+        .getOrElse("application/octet-stream")
+
+      r.headers.get("Content-Length") match {
+        case Some(Seq(length)) =>
+          Ok.sendEntity(HttpEntity.Streamed(r.bodyAsSource, Some(length.toLong), Some(contentType)))
+        //      .withHeaders(CACHE_CONTROL -> "max-age=8640000")
+        case _ =>
+          Ok.chunked(r.bodyAsSource).as(contentType)
+        //      .withHeaders(CACHE_CONTROL -> "max-age=8640000")
       }
     }
   }

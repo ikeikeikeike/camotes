@@ -33,9 +33,16 @@ object JsonFormatter {
     (__ \ "protocol").formatNullable[String] and
     (__ \ "format").formatNullable[String] and
     (__ \ "format_id").formatNullable[String] and
-    (__ \ "tbr").formatNullable[Float] and
-    (__ \ "resolution").formatNullable[String] // TODO: resolution
+    (__ \ "tbr").formatNullable[Float]
   )(VideoFormat.apply, unlift(VideoFormat.unapply))
+
+  implicit val httpHeaders: Format[HttpHeaders] = (
+    (__ \ "accept").formatNullable[String] and
+    (__ \ "acceptCharset").formatNullable[String] and
+    (__ \ "acceptEncoding").formatNullable[String] and
+    (__ \ "acceptLanguage").formatNullable[String] and
+    (__ \ "userAgent").formatNullable[String]
+  )(HttpHeaders.apply, unlift(HttpHeaders.unapply))
 
   implicit val thumbnail: Format[Thumbnail] = (
     (__ \ "id").format[String] and
@@ -72,18 +79,18 @@ object JsonFormatter {
     (__ \ "duration").formatNullable[Int] and
     (__ \ "like_count").formatNullable[Int] and
     (__ \ "view_count").formatNullable[Int] and
-    (__ \ "tags").format[Seq[String]] and
-    (__ \ "categories").format[Seq[String]] and
-    (__ \ "thumbnails").format[Seq[Thumbnail]] and
-    (__ \ "formats").format[Seq[VideoFormat]] and
-    (__ \ "requested_formats").format[Seq[VideoFormat]] and
+    (__ \ "tags").formatNullable[Seq[String]] and
+    (__ \ "categories").formatNullable[Seq[String]] and
+    (__ \ "thumbnails").formatNullable[Seq[Thumbnail]] and
+    (__ \ "formats").formatNullable[Seq[VideoFormat]] and
+    (__ \ "requested_formats").formatNullable[Seq[VideoFormat]] and
     (__ \ "entries").formatNullable[Seq[Root]]
   )(Root.apply, unlift(Root.unapply))
 
 }
 
 object Formatter {
-  def resolution(format: Option[String]) = {
+  def resolution(format: Option[String]): Option[String] = {
     Some(format.map(f => f.split('-')).getOrElse(Array.empty)
       .toSeq.last.trim.split(' ').toSeq.head)
   }
@@ -104,11 +111,14 @@ case class Entry(
 )
 
 case class Thumbnail(id: String, url: String)
-//case class HttpHeaders(
-//  accept: String,
-//  acceptCharset: String,
-//  acceptEncoding: String,
-//  acceptLanguage: String,
+
+case class HttpHeaders(
+  accept:         Option[String],
+  acceptCharset:  Option[String],
+  acceptEncoding: Option[String],
+  acceptLanguage: Option[String],
+  userAgent:      Option[String]
+)
 
 case class VideoFormat(
   manifestUrl: Option[String],
@@ -117,10 +127,8 @@ case class VideoFormat(
   protocol:    Option[String],
   format:      Option[String],
   formatId:    Option[String],
-  tbr:         Option[Float],
-  resolution:  Option[String]
+  tbr:         Option[Float]
 )
-//  httpHeaders: Option[HttpHeaders]
 
 case class Root(
   // httpHeaders:  Option[HttpHeaders],
@@ -141,30 +149,33 @@ case class Root(
   duration:         Option[Int],
   likeCount:        Option[Int],
   viewCount:        Option[Int],
-  tags:             Seq[String],
-  categories:       Seq[String],
-  thumbnails:       Seq[Thumbnail],
-  formats:          Seq[VideoFormat],
-  requestedFormats: Seq[VideoFormat],
+  tags:             Option[Seq[String]],
+  categories:       Option[Seq[String]],
+  thumbnails:       Option[Seq[Thumbnail]],
+  formats:          Option[Seq[VideoFormat]],
+  requestedFormats: Option[Seq[VideoFormat]],
   entries:          Option[Seq[Root]]
 ) {
+  val rightRequestedFormats = requestedFormats.getOrElse(Seq.empty)
+  val rightFormats = formats.getOrElse(Seq.empty)
+  val rightTags = tags.getOrElse(Seq.empty)
+  val rightCategories = categories.getOrElse(Seq.empty)
 
-  def gatheredTags: Seq[String] = (tags ++ categories).distinct
+  def gatheredTags: Seq[String] = (rightTags ++ rightCategories).distinct
 
   def gatheredFormats: Seq[VideoFormat] = {
-    val list = formats ++ requestedFormats
+    val list = rightFormats ++ rightRequestedFormats
 
     if (list.nonEmpty) list else {
       val videoFormat =
-        VideoFormat(
+        VideoFormat.apply(
           manifestUrl = manifestUrl,
           ext = ext,
           url = url,
           protocol = protocol,
           format = format,
           formatId = formatId,
-          tbr = tbr,
-          resolution = Formatter.resolution(format)
+          tbr = tbr
         )
 
       Seq(videoFormat)

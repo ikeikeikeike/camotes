@@ -1,53 +1,52 @@
 $(() => {  if ( !!!$('#req').length ) return;
-  const $request = $('#req');
-        $form = $request.find('form'),
-        $submit = $request.find('form .req-submit'),
-        $result = $request.find('.req-result');
-
-  const src = () => $form.find('[name="src"]').val()
-
-  const elseUnknown = (value) => {
-    if (!value) {
-      return ''
-    } else if (value == 'unknown') {
-      return ''
-    } else {
-      return value;
-    }
-  }
+  const $request  = $('#req');
+  const $form     = $request.find('form');
+  const $submit   = $request.find('form .req-submit');
+  const $result   = $request.find('.req-result');
+  const srcValue  = () => $form.find('[name="src"]').val();
+  const encodeURI = encodeURIComponent;
 
   const resolution = (format) => {
-    if (!format) return '';
-
+    if (! format) return '';
     return format.split('-').pop().trim().split(' ')[0];
   }
 
   const myround = (number, d) => {
-    if (!number) return '';
-
+    if (! number) return '';
     d = d || 2;
     return Math.floor(number * Math.pow(10, d)) / Math.pow(10, d);
   }
 
-  const download = (uri, data, filename) => {
-      var link = document.createElement("a");
-      link.download = filename || `${src().split('/').pop()}.mp4`;
-      link.href = uri + '?' + encodeQueryData(data);
-      link.click();
+  const elseUnknown = (value) => {
+    if (! value) {
+      return ''
+    } else if (value == 'unknown') {
+      return ''
+    }
+
+    return value;
   }
 
-  const encodeQueryData = (data) => {
-    let ret = [];
-    for (let d in data)
-      ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
-    return ret.join('&');
+  const downloadFile = (uri, data, filename) => {
+    const link = document.createElement("a");
+    link.download = filename || `${srcValue().split('/').pop()}.mp4`;
+    link.href = uri + '?' + encodeQueryData(data);
+    link.click();
   }
 
-  const renderResult = ($form, cb) => {
-    if (! validateURL(src()))
-      return alert('Invalid URL');
+  const encodeQueryData = data =>
+    Object.keys(data).map(k => encodeURI(k) + '=' + encodeURI(data[k])).join('&')
 
-    $.ajax({ method: 'POST', url: $form.attr('action'), data: $form.serialize(), dataType: 'json', cache: true }).done(resps => {
+  const render = ($form, cb) => {
+    if (! validateURL(srcValue())) return alert('Invalid URL');
+
+    $.ajax({
+      method: 'POST',
+      url: $form.attr('action'),
+      data: $form.serialize(),
+      dataType: 'json',
+      cache: true
+    }).done(resps => {
 
       $result.find('*').remove()
 
@@ -76,7 +75,7 @@ $(() => {  if ( !!!$('#req').length ) return;
         </div>
         `);
 
-        resp.formats.forEach(fmt => { $div.find('.res-formats tbody').append(`
+        resp.formats.forEach(fmt => $div.find('.res-formats tbody').append(`
         <tr class='res-format'>
           <th scope="row"><a class='btn btn-xs btn-default res-donwload'
             data-manifestUrl='${fmt.manifestUrl}'
@@ -93,7 +92,7 @@ $(() => {  if ( !!!$('#req').length ) return;
           <td>${resolution(fmt.format)}</td>
           <td>${myround(elseUnknown(fmt.tbr) || '', 2)}</td>
         </tr>
-        `)});
+        `));
 
         return $div
       })
@@ -104,14 +103,14 @@ $(() => {  if ( !!!$('#req').length ) return;
     })
   };
 
-  $submit.on('click', (ev) => { renderResult($form, (resps) => { $result.find('.res-donwload').on('click', (ev) => {
-    const d = {}; $form.serializeArray().map(function(x){d[x.name] = x.value});
+  $submit.on('click', _ => render($form, _ => $result.find('.res-donwload').on('click', ev => {
+    const d = {}; $form.serializeArray().map(x => d[x.name] = x.value);
     const data = Object.assign($(ev.currentTarget).data(), d)
 
-    download($form.data('action-stream'), data)
-  })})});
+    downloadFile($form.data('action-stream'), data)
+  })));
 
-  $form.on("keypress", (ev) => {
+  $form.on("keypress", ev => {
     switch (ev.keyCode ? ev.keyCode : ev.which) {
     case 13:
       ev.preventDefault(); ev.stopPropagation();

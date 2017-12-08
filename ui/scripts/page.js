@@ -62,12 +62,8 @@ $(() => {  if ( !!!$('#req').length ) return;
         resp.formats.forEach(fmt => $div.find('.res-formats tbody').append(`
         <tr class='res-format'>
           <th scope="row"><a class='btn btn-xs btn-default res-donwload'
-            data-manifestUrl='${fmt.manifestUrl}'
             data-ext='${fmt.ext}'
-            data-url='${fmt.url}'
-            data-protocol='${fmt.protocol}'
-            data-format='${fmt.format}'
-            data-formatId='${fmt.formatId}'
+            data-format='${fmt.format_id}'
             >
             Download</a>
           </th>

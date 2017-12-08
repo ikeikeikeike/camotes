@@ -13,7 +13,6 @@ import play.api.libs.ws.WSClient
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{ Duration, HOURS }
 
 @Singleton
 class Pages @Inject() (
@@ -24,17 +23,26 @@ class Pages @Inject() (
 )(implicit ec: ExecutionContext) extends BaseController(cc) {
   import dscraper.JsonFormatter._
 
-  case class SrcForm(src: String)
-  val SrcDataForm = Form(mapping("src" -> text)(SrcForm.apply)(SrcForm.unapply))
+  case class requestForm(src: String)
+  val requestDataForm = Form(mapping(
+    "src" -> text
+  )(requestForm.apply)(requestForm.unapply))
 
-  def requestForm = Action { implicit rs =>
-    Ok(views.html.pages.requestForm())
+  case class downloadForm(src: String, ext: String, format: String)
+  val downloadDataForm = Form(mapping(
+    "src" -> text,
+    "ext" -> text,
+    "format" -> text
+  )(downloadForm.apply)(downloadForm.unapply))
+
+  def page = Action { implicit rs =>
+    Ok(views.html.pages.page())
   }
 
-  def request = Action.async { implicit rs =>
+  def info = Action.async { implicit rs =>
     for {
-      fm <- SrcDataForm.bindFromRequest() ?| BadRequest(views.html.pages.requestForm())
-      info <- scraper.info(fm.src) ?| BadRequest(views.html.pages.requestForm())
+      fm <- requestDataForm.bindFromRequest() ?| BadRequest(views.html.pages.page())
+      info <- scraper.info(fm.src) ?| BadRequest(views.html.pages.page())
 
     } yield Ok(Json.toJson(info.entries).toString()).as(JSON)
       .withHeaders(CACHE_CONTROL -> "max-age=0")
@@ -43,8 +51,8 @@ class Pages @Inject() (
 
   def download = Action.async { implicit rs =>
     for {
-      fm <- SrcDataForm.bindFromRequest() ?| BadRequest(views.html.pages.requestForm())
-      r <- scraper.stream(fm.src) ?| BadRequest(views.html.pages.requestForm())
+      fm <- downloadDataForm.bindFromRequest() ?| BadRequest(views.html.pages.page())
+      r <- scraper.stream(fm.src, Seq("ext" -> fm.ext, "format" -> fm.format): _*) ?| BadRequest(views.html.pages.page())
 
     } yield if (r.status >= 400) BadGateway else {
       val contentType = r.headers.get("Content-Type").flatMap(_.headOption)

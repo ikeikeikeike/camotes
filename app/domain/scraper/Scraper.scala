@@ -12,7 +12,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 @ImplementedBy(classOf[infrastructure.scraper.ScraperImpl])
 trait Scraper {
   def info(src: String)(implicit ec: ExecutionContext): Future[Either[Error, Scrape]]
-  def stream(src: String)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]]
+  def stream(src: String, params: (String, String)*)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]]
 }
 
 object JsonFormatter {

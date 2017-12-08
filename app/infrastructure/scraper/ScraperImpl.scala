@@ -35,8 +35,11 @@ class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scrape
     }
   }
 
-  def stream(src: String)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]] = {
-    val client = ws.url(toUrl(streamEndpoint, src)).withRequestTimeout(timeout).withMethod("GET")
+  def stream(src: String, params: (String, String)*)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]] = {
+    val client = ws.url(toUrl(streamEndpoint, src))
+      .withQueryStringParameters(params: _*)
+      .withRequestTimeout(timeout)
+      .withMethod("GET")
 
     for (r <- client.stream()) yield Right(r)
   }
@@ -60,5 +63,4 @@ class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scrape
     site = root.sitename,
     tags = root.gatheredTags.mkString(",")
   )
-
 }

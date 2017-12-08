@@ -1,10 +1,8 @@
-GET     /                                             application.controllers.Pages.requestForm
+GET     /                                             application.controllers.Pages.page
 
-GET     /request                                      application.controllers.Pages.request
-POST    /request                                      application.controllers.Pages.request
+POST    /info                                         application.controllers.Pages.info
 
 GET     /download                                     application.controllers.Pages.download
-POST    /download                                     application.controllers.Pages.download
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)

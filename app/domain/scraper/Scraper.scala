@@ -76,7 +76,7 @@ object JsonFormatter {
     (__ \ "tbr").formatNullable[Float] and
     (__ \ "extractor").formatNullable[String] and
     (__ \ "thumbnail").formatNullable[String] and
-    (__ \ "duration").formatNullable[Int] and
+    (__ \ "duration").formatNullable[Float] and
     (__ \ "like_count").formatNullable[Int] and
     (__ \ "view_count").formatNullable[Int] and
     (__ \ "tags").formatNullable[Seq[String]] and
@@ -146,7 +146,7 @@ case class Root(
   tbr:              Option[Float], // format
   extractor:        Option[String],
   thumbnail:        Option[String],
-  duration:         Option[Int],
+  duration:         Option[Float],
   likeCount:        Option[Int],
   viewCount:        Option[Int],
   tags:             Option[Seq[String]],

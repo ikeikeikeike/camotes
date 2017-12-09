@@ -58,7 +58,7 @@ class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scrape
     src = root.webpageUrl.getOrElse(""),
     likeCount = root.likeCount,
     viewCount = root.viewCount,
-    duration = root.duration,
+    duration = root.duration.map(_.toInt),
     img = root.thumbnail.getOrElse(""),
     site = root.sitename,
     tags = root.gatheredTags.mkString(",")

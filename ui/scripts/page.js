@@ -37,8 +37,16 @@ $(() => {  if ( !!!$('#req').length ) return;
       const $html = resps.map(resp => {
         const $div = $(`
         <div class='res-meta'>
-          <div class='res-title'>title: ${resp.title}</div>
+          <div class='res-title'>title: ${resp.titile}</div>
           <div class='res-content'>content: ${resp.content}</div>
+          <div class='res-src'>src: ${resp.src}</div>
+          <div class='res-duration'>duration: ${resp.duration}</div>
+          <div class='res-likeCount'>likeCount: ${resp.likeCount}</div>
+          <div class='res-viewCount'>viewCount: ${resp.viewCount}</div>
+          <div class='res-img'>img: ${resp.img}</div>
+          <div class='res-site'>site: ${resp.site}</div>
+          <div class='res-tags'>tags: ${resp.tags}</div>
+
           <div class='res-formats'>
             <table class="table">
               <caption>Optional table caption.</caption>

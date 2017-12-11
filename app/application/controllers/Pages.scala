@@ -45,8 +45,7 @@ class Pages @Inject() (
       info <- scraper.info(fm.src) ?| BadRequest(views.html.pages.page())
 
     } yield Ok(Json.toJson(info.entries).toString()).as(JSON)
-      .withHeaders(CACHE_CONTROL -> "max-age=0")
-    //      .withHeaders(CACHE_CONTROL -> "max-age=8640000")
+      .withHeaders(CACHE_CONTROL -> "max-age=8640000") //      .withHeaders(CACHE_CONTROL -> "max-age=0")
   }
 
   def download = Action.async { implicit rs =>
@@ -61,10 +60,10 @@ class Pages @Inject() (
       r.headers.get("Content-Length") match {
         case Some(Seq(length)) =>
           Ok.sendEntity(HttpEntity.Streamed(r.bodyAsSource, Some(length.toLong), Some(contentType)))
-        //      .withHeaders(CACHE_CONTROL -> "max-age=8640000")
+            .withHeaders(CACHE_CONTROL -> "max-age=8640000")
         case _ =>
           Ok.chunked(r.bodyAsSource).as(contentType)
-        //      .withHeaders(CACHE_CONTROL -> "max-age=8640000")
+            .withHeaders(CACHE_CONTROL -> "max-age=8640000")
       }
     }
   }

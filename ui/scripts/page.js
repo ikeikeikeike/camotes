@@ -37,7 +37,7 @@ $(() => {  if ( !!!$('#req').length ) return;
       const $html = resps.map(resp => {
         const $div = $(`
         <div class='res-meta'>
-          <div class='res-title'>title: ${resp.titile}</div>
+          <div class='res-title'>title: ${resp.title}</div>
           <div class='res-content'>content: ${resp.content}</div>
           <div class='res-src'>src: ${resp.src}</div>
           <div class='res-duration'>duration: ${resp.duration}</div>

@@ -57,7 +57,7 @@ gulp.task('vendor-scripts', () => {
 gulp.task('scripts', () => {
   gulp.src(['./scripts/*.js'])
   .pipe(concat('app.min.js'))
-  // .pipe(babel())
+  .pipe(babel())
   // .pipe(uglify())
   .pipe(gulp.dest('../public/scripts'));
 });

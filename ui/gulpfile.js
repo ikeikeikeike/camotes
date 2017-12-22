@@ -47,7 +47,7 @@ gulp.task('prepare-scripts', () => {
 });
 
 gulp.task('vendor-scripts', () => {
-  gulp.src(['../node_modules/typeahead.js/dist/*.js',
+  gulp.src(['../node_modules/i18next/dist/umd/*.js',
     './lib/scripts/*.js'])
   .pipe(concat('vender.min.js'))
   .pipe(uglify())
@@ -58,7 +58,7 @@ gulp.task('scripts', () => {
   gulp.src(['./scripts/*.js'])
   .pipe(concat('app.min.js'))
   .pipe(babel())
-  // .pipe(uglify())
+  .pipe(uglify())
   .pipe(gulp.dest('../public/scripts'));
 });
 

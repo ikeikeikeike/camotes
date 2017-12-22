@@ -1,6 +1,5 @@
 package application.views
-import domain.models.EntryRow
 
-case class RequestView(
-  entries: Seq[EntryRow]
+case class PageView(
+  src: String = ""
 ) extends View {}

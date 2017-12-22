@@ -9,6 +9,11 @@ body {
 }
 
 
+.not-allowed {
+    cursor: not-allowed;
+}
+
+
 /* CUSTOMIZE THE CAROUSEL
 -------------------------------------------------- */
 
@@ -50,6 +55,7 @@ body {
 .marketing .col-lg-4 p {
   margin-right: .75rem;
   margin-left: .75rem;
+  min-height: 7.75rem;
 }
 
 

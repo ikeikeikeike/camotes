@@ -1,4 +1,4 @@
-GET     /                                             application.controllers.Pages.page
+GET     /                                             application.controllers.Pages.page(none: String ?= "")
 
 POST    /info                                         application.controllers.Pages.info
 
@@ -6,3 +6,7 @@ GET     /download                                     application.controllers.Pa
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
+
+
+# URL has http or https prefix
+GET     /$none<https?.+>                              application.controllers.Pages.page(none)

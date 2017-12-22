@@ -3,7 +3,8 @@ package application.controllers
 import javax.inject.{ Inject, Singleton }
 
 import application.helpers
-import domain.{ scraper => dscraper }
+import application.views.PageView
+import domain.scraper
 import io.kanaka.monadic.dsl._
 import play.api.data.Forms._
 import play.api.data._
@@ -16,12 +17,12 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class Pages @Inject() (
-  scraper: dscraper.Scraper,
-  ws:      WSClient,
-  helper:  helpers.Pages,
-  cc:      ControllerComponents
+  ws:     WSClient,
+  helper: helpers.Pages,
+  cc:     ControllerComponents,
+  srv:    scraper.ScraperService
 )(implicit ec: ExecutionContext) extends BaseController(cc) {
-  import dscraper.JsonFormatter._
+  import scraper.JsonFormatter._
 
   case class requestForm(src: String)
   val requestDataForm = Form(mapping(
@@ -35,14 +36,14 @@ class Pages @Inject() (
     "format" -> text
   )(downloadForm.apply)(downloadForm.unapply))
 
-  def page = Action { implicit rs =>
+  def page(none: String) = Action { implicit rs =>
     Ok(views.html.pages.page())
   }
 
   def info = Action.async { implicit rs =>
     for {
       fm <- requestDataForm.bindFromRequest() ?| BadRequest(views.html.pages.page())
-      info <- scraper.info(fm.src) ?| BadRequest(views.html.pages.page())
+      info <- srv.info(fm.src) ?| BadRequest(views.html.pages.page())
 
     } yield Ok(Json.toJson(info.entries).toString()).as(JSON)
       .withHeaders(CACHE_CONTROL -> "max-age=8640000") //      .withHeaders(CACHE_CONTROL -> "max-age=0")
@@ -51,7 +52,7 @@ class Pages @Inject() (
   def download = Action.async { implicit rs =>
     for {
       fm <- downloadDataForm.bindFromRequest() ?| BadRequest(views.html.pages.page())
-      r <- scraper.stream(fm.src, Seq("ext" -> fm.ext, "format" -> fm.format): _*) ?| BadRequest(views.html.pages.page())
+      r <- srv.stream(fm.src, Seq("ext" -> fm.ext, "format" -> fm.format): _*) ?| BadRequest(views.html.pages.page())
 
     } yield if (r.status >= 400) BadGateway else {
       val contentType = r.headers.get("Content-Type").flatMap(_.headOption)

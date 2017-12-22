@@ -9,12 +9,6 @@ import play.api.libs.ws.WSResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-@ImplementedBy(classOf[infrastructure.scraper.ScraperImpl])
-trait Scraper {
-  def info(src: String)(implicit ec: ExecutionContext): Future[Either[Error, Scrape]]
-  def stream(src: String, params: (String, String)*)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]]
-}
-
 object JsonFormatter {
   implicit def option[T: Format]: Format[Option[T]] = new Format[Option[T]] {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
@@ -97,6 +91,7 @@ object Formatter {
 }
 
 case class Scrape(entries: Seq[Entry])
+
 case class Entry(
   title:     String,
   content:   Option[String]   = None,
@@ -198,4 +193,10 @@ case class Root(
         ""
     }
   }
+}
+
+@ImplementedBy(classOf[infrastructure.scraper.ScraperImpl])
+trait Scraper {
+  def info(src: String)(implicit ec: ExecutionContext): Future[Either[Error, Scrape]]
+  def stream(src: String, params: (String, String)*)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]]
 }

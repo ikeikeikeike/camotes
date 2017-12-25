@@ -15,6 +15,7 @@ gulp.task('vendor-style', () => {
     '../node_modules/font-awesome/css/font-awesome.css',
     '../node_modules/simple-line-icons/css/simple-line-icons.css',
     '../node_modules/weather-icons/css/weather-icons.css',
+    '../node_modules/flag-icon-css/css/flag-icon.min.css',
     './lib/stylesheets/*.css'])
   .pipe(concat('vendor.min.css'))
   .pipe(cleanCSS({level: {1: {specialComments: 0}}}))
@@ -27,6 +28,15 @@ gulp.task('web-font', () => {
   ])
   .pipe(gulp.dest('../public/fonts'));
 });
+
+
+gulp.task('web-flags', () => {
+  gulp.src([
+    '../node_modules/flag-icon-css/flags/*/*'
+  ])
+  .pipe(gulp.dest('../public/flags'));
+});
+
 
 gulp.task('scss', () => {
   var processors = [
@@ -48,6 +58,7 @@ gulp.task('prepare-scripts', () => {
 
 gulp.task('vendor-scripts', () => {
   gulp.src(['../node_modules/i18next/dist/umd/*.js',
+    '../node_modules/js-cookie/src/js.cookie.js',
     './lib/scripts/*.js'])
   .pipe(concat('vender.min.js'))
   .pipe(uglify())
@@ -67,6 +78,6 @@ gulp.task('watch', () => {
   gulp.watch('./scripts/*.js', ['scripts']);
 });
 
-gulp.task('build', ['scss', 'vendor-style', 'prepare-scripts', 'vendor-scripts', 'web-font', 'scripts']);
-gulp.task('default', ['scss', 'watch', 'vendor-style', 'web-font']);
+gulp.task('build', ['scss', 'vendor-style', 'prepare-scripts', 'vendor-scripts', 'web-flags', 'web-font', 'scripts']);
+gulp.task('default', ['scss', 'watch', 'vendor-style', 'web-flags', 'web-font']);
 

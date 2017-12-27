@@ -10,18 +10,21 @@ import play.api.{ Configuration, Logger }
 
 import scala.concurrent.duration.{ Duration, HOURS }
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Random
 
 class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scraper {
-  import JsonFormatter._
-
   lazy val logger = Logger(this.getClass)
 
-  val infoEndpoint = "http://localhost:8000/api/info"
-  val streamEndpoint = "http://localhost:8000/api/stream"
+  val endpoint = "http://localhost:8000/lifecycle/alives"
   val timeout = Duration(5, HOURS)
 
+  import JsonFormatter._
+
   def info(src: String)(implicit ec: ExecutionContext): Future[Either[Error, Scrape]] = {
-    for (response <- ws.url(toUrl(infoEndpoint, src)).get()) yield (response.json \ "root").validate[Root] match {
+    for {
+      l <- lifecycle()
+      r <- ws.url(toUrl(l.info, src)).get()
+    } yield (r.json \ "root").validate[Root] match {
       case s: JsError =>
         logger.error(s.toString)
         Left(new Error(s.toString))
@@ -35,18 +38,10 @@ class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scrape
   }
 
   def stream(src: String, params: (String, String)*)(implicit ec: ExecutionContext): Future[Either[Error, WSResponse]] = {
-    val client = ws.url(toUrl(streamEndpoint, src))
-      .withQueryStringParameters(params: _*)
-      .withRequestTimeout(timeout)
-      .withMethod("GET")
-
-    for (r <- client.stream()) yield Right(r)
-  }
-
-  private def toUrl(endpoint: String, src: String): String = {
-    val url = s"$endpoint/${new String(Base64.encodeBase64(src.getBytes))}"
-    logger.info(s"${src} to be encoded $url")
-    url
+    for {
+      l <- lifecycle()
+      r <- ws.url(toUrl(l.stream, src)).withQueryStringParameters(params: _*).withRequestTimeout(timeout).stream()
+    } yield Right(r)
   }
 
   private def properly(roots: Seq[Root]): Seq[Entry] = roots.map(properly)
@@ -62,4 +57,18 @@ class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scrape
     site = root.sitename,
     tags = root.gatheredTags.mkString(",")
   )
+
+  private def toUrl(endpoint: String, src: String): String = {
+    val url = s"$endpoint${new String(Base64.encodeBase64(src.getBytes))}"
+    logger.info(s"${src} to be encoded $url")
+    url
+  }
+
+  private def lifecycle()(implicit ec: ExecutionContext): Future[Lifecycle] = {
+    for (r <- ws.url(endpoint).get()) yield {
+      val lifecycles = (r.json \ "root").as[Seq[Lifecycle]]
+      Random.shuffle(lifecycles).head
+    }
+  }
+
 }

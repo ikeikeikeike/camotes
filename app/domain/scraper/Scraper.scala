@@ -20,7 +20,7 @@ object JsonFormatter {
 
   implicit val datetimeWrites = JodaWrites.jodaDateWrites("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 
-  implicit val videoFormat: Format[VideoFormat] = (
+  implicit val videoFormatF: Format[VideoFormat] = (
     (__ \ "manifest_url").formatNullable[String] and
     (__ \ "ext").formatNullable[String] and
     (__ \ "url").formatNullable[String] and
@@ -30,7 +30,7 @@ object JsonFormatter {
     (__ \ "tbr").formatNullable[Float]
   )(VideoFormat.apply, unlift(VideoFormat.unapply))
 
-  implicit val httpHeaders: Format[HttpHeaders] = (
+  implicit val httpHeadersF: Format[HttpHeaders] = (
     (__ \ "accept").formatNullable[String] and
     (__ \ "acceptCharset").formatNullable[String] and
     (__ \ "acceptEncoding").formatNullable[String] and
@@ -38,12 +38,12 @@ object JsonFormatter {
     (__ \ "userAgent").formatNullable[String]
   )(HttpHeaders.apply, unlift(HttpHeaders.unapply))
 
-  implicit val thumbnail: Format[Thumbnail] = (
+  implicit val thumbnailF: Format[Thumbnail] = (
     (__ \ "id").format[String] and
     (__ \ "url").format[String]
   )(Thumbnail.apply, unlift(Thumbnail.unapply))
 
-  implicit val entry: Format[Entry] = (
+  implicit val entryF: Format[Entry] = (
     (__ \ "title").format[String] and
     (__ \ "content").formatNullable[String] and
     (__ \ "src").format[String] and
@@ -56,7 +56,7 @@ object JsonFormatter {
     (__ \ "formats").format[Seq[VideoFormat]]
   )(Entry.apply, unlift(Entry.unapply))
 
-  implicit val root: Format[Root] = (
+  implicit val rootF: Format[Root] = (
     (__ \ "id").formatNullable[String] and
     (__ \ "title").formatNullable[String] and
     (__ \ "webpage_url").formatNullable[String] and
@@ -80,6 +80,13 @@ object JsonFormatter {
     (__ \ "requested_formats").formatNullable[Seq[VideoFormat]] and
     (__ \ "entries").formatNullable[Seq[Root]]
   )(Root.apply, unlift(Root.unapply))
+
+  implicit val lifecycleF: Format[Lifecycle] = (
+    (__ \ "name").format[String] and
+    (__ \ "host").format[String] and
+    (__ \ "info").format[String] and
+    (__ \ "stream").format[String]
+  )(Lifecycle.apply, unlift(Lifecycle.unapply))
 
 }
 
@@ -194,6 +201,13 @@ case class Root(
     }
   }
 }
+
+case class Lifecycle(
+  name:   String,
+  host:   String,
+  info:   String,
+  stream: String
+)
 
 @ImplementedBy(classOf[infrastructure.scraper.ScraperImpl])
 trait Scraper {

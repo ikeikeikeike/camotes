@@ -1,16 +1,15 @@
 package infrastructure.scalikejdbc
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
 
 import domain.models.EntryRow
 import domain.models.dao.EntryDao
-import org.joda.time.{ DateTime, DateTimeZone }
+import org.joda.time.{DateTime, DateTimeZone}
 import scalikejdbc._
 
 import scala.async.Async.async
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
 class EntryDaoImpl @Inject() extends EntryDao {
   private def *(rs: WrappedResultSet): EntryRow = EntryRow(
     id = rs.long("id"),
@@ -50,12 +49,14 @@ class EntryDaoImpl @Inject() extends EntryDao {
       sql"""insert into entries(title, src, dest, duration, img, site, tags, created_at, updated_at)
       values(${row.title}, ${row.src}, '', ${row.duration}, ${row.img}, ${row.site}, ${row.tags}, ${dt}, ${dt})"""
         .updateAndReturnGeneratedKey.apply()
-    }.map(id => row.copy(id = id, createdAt = dt, updatedAt = dt))
+    }.map(id => row.copy(
+      id = id, createdAt = dt, updatedAt = dt)
+    )
   }
 
   def save(row: EntryRow)(implicit session: DBSession = AutoSession, ex: ExecutionContext): Future[EntryRow] = {
     find(row).flatMap {
-      case Some(row) => Future.successful(row)
+      case Some(r)   => Future.successful(r)
       case None      => create(row)
     }
   }

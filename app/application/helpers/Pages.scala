@@ -1,14 +1,10 @@
 package application.helpers
 
-import javax.inject.{ Inject, Singleton }
-
 //import domain.models.EntryRow
-import domain.models.dao.EntryDao
 //import domain.scraper.{ Entry, Scrape }
 
 //import scala.concurrent.Future
 
-@Singleton
 class Pages //@Inject() (dao: EntryDao)
 {
   //  import scala.concurrent.ExecutionContext.Implicits.global

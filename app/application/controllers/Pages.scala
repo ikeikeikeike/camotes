@@ -1,9 +1,8 @@
 package application.controllers
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.Inject
 
 import application.helpers
-import application.views.PageView
 import domain.scraper
 import io.kanaka.monadic.dsl._
 import play.api.data.Forms._
@@ -15,7 +14,6 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 
-@Singleton
 class Pages @Inject() (
   ws:     WSClient,
   helper: helpers.Pages,

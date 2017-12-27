@@ -6,9 +6,12 @@
 /project/target
 
 /ui/node_modules
+
 /public/scripts/*
 /public/stylesheets/*
 /public/fonts/*
+/public/flags/*
+
 /logs/*
 
 /package-lock.json
@@ -21,4 +24,3 @@
 /ui/scripts
 /ui/stylesheets
 /ui/lib
-/public/flags/

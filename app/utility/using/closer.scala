@@ -1,6 +1,6 @@
 package utility.using
 
-import java.io.{InputStream, OutputStream, Writer}
+import java.io.{ InputStream, OutputStream, Writer }
 
 import scala.io.Source
 

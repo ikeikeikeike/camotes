@@ -24,3 +24,5 @@
 /ui/scripts
 /ui/stylesheets
 /ui/lib
+
+/upload.sh

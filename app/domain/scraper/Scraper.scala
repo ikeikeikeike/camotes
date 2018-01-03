@@ -203,9 +203,9 @@ case class Root(
 }
 
 case class Lifecycle(
-  name:   String,
   host:   String,
   info:   String,
+  name:   String,
   stream: String
 )
 

@@ -15,7 +15,7 @@ import scala.util.Random
 class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scraper {
   lazy val logger = Logger(this.getClass)
 
-  val endpoint = "http://localhost:8000/lifecycle/alives"
+  lazy val endpoint = config.get[String]("scraper.endpoint")
   val timeout = Duration(5, HOURS)
 
   import JsonFormatter._

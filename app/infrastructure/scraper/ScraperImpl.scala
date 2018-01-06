@@ -4,12 +4,12 @@ import javax.inject.Inject
 
 import domain.scraper._
 import org.apache.commons.codec.binary.Base64
-import play.api.libs.json.{JsError, JsSuccess}
-import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.{Configuration, Logger}
+import play.api.libs.json.{ JsError, JsSuccess }
+import play.api.libs.ws.{ WSClient, WSResponse }
+import play.api.{ Configuration, Logger }
 
-import scala.concurrent.duration.{Duration, HOURS}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.{ Duration, HOURS }
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Random
 
 class ScraperImpl @Inject() (config: Configuration, ws: WSClient) extends Scraper {

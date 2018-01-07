@@ -7,12 +7,13 @@
 
 /ui/node_modules
 
-/public/scripts/*
-/public/stylesheets/*
-/public/fonts/*
-/public/flags/*
+/public/scripts
+/public/stylesheets
+/public/fonts
+/public/flags
+/public/images
 
-/logs/*
+/logs
 
 /package-lock.json
 

@@ -56,6 +56,8 @@ class Pages @Inject() (
       val contentType = r.headers.get("Content-Type").flatMap(_.headOption)
         .getOrElse("application/octet-stream")
 
+      srv.increment // Count up number of download times
+
       r.headers.get("Content-Length") match {
         case Some(Seq(length)) =>
           Ok.sendEntity(HttpEntity.Streamed(r.bodyAsSource, Some(length.toLong), Some(contentType)))

@@ -6,11 +6,7 @@ import scala.io.Source
 
 object Closer {
   def apply[A, B](resource: A)(process: A => B)(implicit closer: Closing[A]): B =
-    try {
-      process(resource)
-    } finally {
-      closer.close(resource)
-    }
+    try process(resource) finally closer.close(resource)
 }
 
 case class Closing[-A](close: A => Unit)
